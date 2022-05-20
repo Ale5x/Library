@@ -34,7 +34,7 @@ public class AuthorServiceImpl implements AuthorService {
             if (validator.isLength(name)) {
                 List<Author> authors = authorDao.getAuthors();
                 // Can be replaced with getting the author by name -> showAuthorByName(String name)
-                if (authors.stream().anyMatch(x -> x.getName().equals(name))) {
+                if (authors.stream().noneMatch(x -> x.getName().equalsIgnoreCase(name))) {
                     Author author = new Author();
                     author.setName(name);
                     return authorDao.create(author);

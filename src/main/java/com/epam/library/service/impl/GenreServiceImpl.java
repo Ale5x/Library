@@ -45,7 +45,7 @@ public class GenreServiceImpl implements GenreService {
             if (validator.isLength(category)) {
                 List<Genre> genres = genreDao.getGenres();
                 //Can be replaced with getting the genre by category -> showGenreByCategory(String category)
-                if (genres.stream().anyMatch(x -> x.getCategory().equals(category))) {
+                if (genres.stream().noneMatch(x -> x.getCategory().equalsIgnoreCase(category))) {
                     Genre genre = new Genre();
                     genre.setCategory(category);
                     return genreDao.create(genre);
