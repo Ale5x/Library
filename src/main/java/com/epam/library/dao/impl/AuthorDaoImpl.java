@@ -29,30 +29,39 @@ public class AuthorDaoImpl extends DaoHelper implements AuthorDao {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthorDaoImpl.class);
 
+    //INSERT IGNORE INTO authors(name) VALUES(?)
     private static final String ADD_AUTHOR_QUERY = String.format("INSERT IGNORE INTO %s(%s) VALUES(?)",
             TableName.AUTHORS, ColumnName.AUTHOR_NAME);
 
+    //SELECT * FROM authors WHERE name=?;
     private final static String GET_AUTHOR_BY_NAME_QUERY = String.format("SELECT * FROM %s WHERE %s=?;",
             TableName.AUTHORS, ColumnName.AUTHOR_NAME);
 
+    //SELECT * FROM authors WHERE id_authors=?;
     private final static String GET_AUTHOR_BY_ID_QUERY = String.format("SELECT * FROM %s WHERE %s=?;",
             TableName.AUTHORS, ColumnName.AUTHOR_ID_AUTHOR);
 
+    //SELECT * FROM authors order by id_authors;
     private final static String GET_ALL_AUTHOR_QUERY = String.format("SELECT * FROM %s order by %s;",
             TableName.AUTHORS, ColumnName.AUTHOR_ID_AUTHOR);
 
+    //SELECT * FROM authors WHERE name LIKE
     private final static String GET_BY_PART_NAME_QUERY = String.format("SELECT * FROM %s WHERE %s LIKE ",
             TableName.AUTHORS, ColumnName.AUTHOR_NAME);
 
+    //select count(id_book) from authors_has_book where id_author=?
     private final static String GET_COUNT_BOOKS_BY_AUTHOR_QUERY = String.format("select count(%s) from %s where %s=?",
             ColumnName.AHB_ID_BOOK, TableName.A_H_B, ColumnName.AHB_ID_AUTHORS);
 
+    //select count(name) from authors
     private final static String GET_COUNT_QUERY = String.format("select count(%s) from %s", ColumnName.AUTHOR_NAME,
             TableName.AUTHORS);
 
+    //UPDATE authors SET name=? WHERE id_authors=?;
     private final static String UPDATE_AUTHOR_BY_ID_QUERY = String.format("UPDATE %s SET %s=? WHERE %s=?;",
             TableName.AUTHORS, ColumnName.AUTHOR_NAME, ColumnName.AUTHOR_ID_AUTHOR);
 
+    //delete from authors_has_book where id_book=?
     private static final String DELETE_AUTHOR_BY_BOOK_QUERY = String.format("delete from %s where %s=?",
             TableName.A_H_B, ColumnName.AHB_ID_BOOK);
 

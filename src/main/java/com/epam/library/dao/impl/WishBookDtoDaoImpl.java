@@ -28,10 +28,14 @@ public class WishBookDtoDaoImpl extends DaoHelper implements WishBookDtoDao {
 
     private static final Logger logger = LoggerFactory.getLogger(WishBookDtoDaoImpl.class);
 
+    /*
+        SELECT * FROM wish_books left join books on(wish_books.id_books=books.id_books)
+        where wish_books.id_users=? group by wish_books.added
+     */
     private static final String GET_WISH_BOOKS_QUERY = String.format("SELECT * FROM %s left join %s on(%s.%s=%s.%s) " +
-            " where %s.%s=? group by %s.%s",  TableName.WISH_BOOK,
-            TableName.BOOK, TableName.WISH_BOOK, ColumnName.WISH_BOOK_ID_BOOK, TableName.BOOK, ColumnName.BOOK_ID_BOOK,
-            TableName.WISH_BOOK, ColumnName.WISH_BOOK_ID_USER, TableName.WISH_BOOK, ColumnName.WISH_BOOK_ADDED);
+            " where %s.%s=? group by %s.%s",  TableName.WISH_BOOK, TableName.BOOK, TableName.WISH_BOOK,
+            ColumnName.WISH_BOOK_ID_BOOK, TableName.BOOK, ColumnName.BOOK_ID_BOOK, TableName.WISH_BOOK,
+            ColumnName.WISH_BOOK_ID_USER, TableName.WISH_BOOK, ColumnName.WISH_BOOK_ADDED);
 
     @Override
     public List<WishBookDto> getBooks(long userId) throws DaoException {

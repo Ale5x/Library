@@ -29,22 +29,34 @@ public class BookDaoImpl extends DaoHelper implements BookDao {
 
     private static final Logger logger = LoggerFactory.getLogger(BookDaoImpl.class);
 
+    /*
+        INSERT INTO books(shelf, title, quantity, borrow, publisher, description, year, isbn, id_library)
+        VALUES(?, ?, ?, ?, ?, ?, ?, ?, (SELECT id_library FROM libraries WHERE city=?))
+     */
     private static final String ADD_BOOK_QUERY = String.format("INSERT INTO %s(%s, %s, %s, %s, %s, %s, %s, %s, %s) " +
                     "VALUES(?, ?, ?, ?, ?, ?, ?, ?, (SELECT %s FROM %s WHERE %s=?))", TableName.BOOK, ColumnName.BOOK_SHELF,
             ColumnName.BOOK_TITLE, ColumnName.BOOK_QUANTITY, ColumnName.BOOK_BORROW, ColumnName.BOOK_PUBLISHER,
             ColumnName.BOOK_DESCRIPTION, ColumnName.BOOK_YEAR, ColumnName.BOOK_ISBN, ColumnName.BOOK_ID_LIBRARY,
             ColumnName.LIBRARY_ID_LIBRARY, TableName.LIBRARY, ColumnName.LIBRARY_CITY);
 
+    /*
+        UPDATE books SET isbn=?, title=?, quantity=?, borrow=?, publisher=?, description=?, shelf=?,
+        id_library=(SELECT id_library FROM libraries WHERE city=?) where id_books=?
+     */
     private static final String UPDATE_BOOK_QUERY = String.format("UPDATE %s SET %s=?, %s=?, %s=?, %s=?, " +
             "%s=?, %s=?, %s=?, %s=(SELECT %s FROM %s WHERE %s=?) where %s=?", TableName.BOOK, ColumnName.BOOK_ISBN,
             ColumnName.BOOK_TITLE, ColumnName.BOOK_QUANTITY, ColumnName.BOOK_BORROW, ColumnName.BOOK_PUBLISHER,
             ColumnName.BOOK_DESCRIPTION, ColumnName.BOOK_SHELF, ColumnName.BOOK_ID_LIBRARY, ColumnName.LIBRARY_ID_LIBRARY,
             TableName.LIBRARY, ColumnName.LIBRARY_CITY, ColumnName.BOOK_ID_BOOK);
 
+    /*
+        SELECT * FROM books left join libraries on books.id_library=libraries.id_library WHERE id_books=?
+     */
     private static final String GET_BOOK_BY_ID = String.format("SELECT * FROM %s left join %s on %s.%s=%s.%s WHERE %s=?",
             TableName.BOOK, TableName.LIBRARY, TableName.BOOK, ColumnName.BOOK_ID_LIBRARY, TableName.LIBRARY,
             ColumnName.LIBRARY_ID_LIBRARY, ColumnName.BOOK_ID_BOOK);
 
+    //SELECT COUNT(title) FROM books;
     private final static String GET_COUNT_BOOKS_QUERY = String.format("SELECT COUNT(%s) FROM %s;",
             ColumnName.BOOK_TITLE, TableName.BOOK);
 

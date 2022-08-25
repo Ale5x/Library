@@ -27,20 +27,30 @@ public class BookDtoDaoImpl extends DaoHelper implements BookDtoDao {
 
     private static final Logger logger = LoggerFactory.getLogger(BookDtoDaoImpl.class);
 
+    //INSERT INTO authors_has_book(id_author, id_book) VALUES((SELECT id_authors FROM authors WHERE name=?), ?)
     private static final String ADD_AHB_QUERY = String.format("INSERT INTO %s(%s, %s) " +
                     "VALUES((SELECT %s FROM %s WHERE %s=?), ?)", TableName.A_H_B, ColumnName.AHB_ID_AUTHORS,
             ColumnName.AHB_ID_BOOK, ColumnName.AUTHOR_ID_AUTHOR, TableName.AUTHORS, ColumnName.AUTHOR_NAME);
 
+    //INSERT INTO genres_has_book(id_genre, id_book) VALUES((SELECT id_genres FROM genres WHERE genre=?), ?)
     private static final String ADD_GHB_QUERY = String.format("INSERT INTO %s(%s, %s) " +
                     "VALUES((SELECT %s FROM %s WHERE %s=?), ?)", TableName.G_H_B, ColumnName.GHB_ID_GENRES,
             ColumnName.GHB_ID_BOOK, ColumnName.GENRES_ID_GENRE, TableName.GENRES, ColumnName.GENRES_GENRE);
 
+    /*
+        INSERT INTO books(shelf, title, quantity, borrow, publisher, description, year, isbn, id_library)
+        VALUES(?, ?, ?, ?, ?, ?, ?, ?, (SELECT id_library FROM libraries WHERE city=?))
+     */
     private static final String ADD_BOOK_QUERY = String.format("INSERT INTO %s(%s, %s, %s, %s, %s, %s, %s, %s, %s) " +
                     "VALUES(?, ?, ?, ?, ?, ?, ?, ?, (SELECT %s FROM %s WHERE %s=?))", TableName.BOOK, ColumnName.BOOK_SHELF,
             ColumnName.BOOK_TITLE, ColumnName.BOOK_QUANTITY, ColumnName.BOOK_BORROW, ColumnName.BOOK_PUBLISHER,
             ColumnName.BOOK_DESCRIPTION, ColumnName.BOOK_YEAR, ColumnName.BOOK_ISBN, ColumnName.BOOK_ID_LIBRARY,
             ColumnName.LIBRARY_ID_LIBRARY, TableName.LIBRARY, ColumnName.LIBRARY_CITY);
 
+    /*
+        UPDATE books SET title=?, quantity=?, borrow=?, publisher=?, description=?, year=?, added=?, isbn=?,
+        id_library=(SELECT id_library FROM libraries WHERE city=?), shelf=? WHERE id_books=?;
+     */
     private static final String UPDATE_BOOK_QUERY = String.format("UPDATE %s SET %s=?, %s=?, %s=?, %s=?, %s=?, " +
                     "%s=?, %s=?, %s=?, %s=(SELECT %s FROM %s WHERE %s=?), %s=? WHERE %s=?;", TableName.BOOK, ColumnName.BOOK_TITLE,
             ColumnName.BOOK_QUANTITY, ColumnName.BOOK_BORROW, ColumnName.BOOK_PUBLISHER, ColumnName.BOOK_DESCRIPTION,
@@ -48,6 +58,14 @@ public class BookDtoDaoImpl extends DaoHelper implements BookDtoDao {
             ColumnName.LIBRARY_ID_LIBRARY, TableName.LIBRARY, ColumnName.LIBRARY_CITY, ColumnName.BOOK_SHELF,
             ColumnName.BOOK_ID_BOOK);
 
+    /*
+        Select *, group_concat(Distinct name order by name SEPARATOR', ') AS authors,
+        group_concat(distinct genre order by genre SEPARATOR', ') AS genres from books left join authors_has_book
+        on(books.id_books=authors_has_book.id_book) left join authors on(authors_has_book.id_author=authors.id_authors)
+        left join genres_has_book on(books.id_books=genres_has_book.id_book) left join genres
+        on(genres_has_book.id_genre=genres.id_genres) left join libraries on(books.id_books=libraries.id_library)
+        where books.id_books=? group by books.id_books
+     */
     private static final String GET_BOOK_BY_ID_QUERY = String.format("Select *, group_concat(Distinct %s order by %s " +
                     "SEPARATOR', ') AS %s, group_concat(distinct %s order by %s SEPARATOR', ') AS %s from %s left " +
                     "join %s on(books.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join " +
@@ -61,6 +79,14 @@ public class BookDtoDaoImpl extends DaoHelper implements BookDtoDao {
             ColumnName.LIBRARY_ID_LIBRARY, TableName.BOOK, ColumnName.BOOK_ID_BOOK, TableName.BOOK,
             ColumnName.BOOK_ID_BOOK);
 
+    /*
+        Select *, group_concat(Distinct name order by name SEPARATOR', ') AS authors,
+        group_concat(distinct genre order by genre SEPARATOR', ') AS genres from books left join authors_has_book
+        on(books.id_books=authors_has_book.id_book) left join authors on(authors_has_book.id_author=authors.id_authors)
+        left join genres_has_book on(books.id_books=genres_has_book.id_book) left join genres
+        on(genres_has_book.id_genre=genres.id_genres) left join libraries on(books.id_books=libraries.id_library)
+        where libraries.city=? group by books.id_books
+     */
     private static final String GET_BOOK_BY_CITY_QUERY = String.format("Select *, group_concat(Distinct %s order by %s " +
                     "SEPARATOR', ') AS %s, group_concat(distinct %s order by %s SEPARATOR', ') AS %s from %s left " +
                     "join %s on(books.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join " +
@@ -74,6 +100,13 @@ public class BookDtoDaoImpl extends DaoHelper implements BookDtoDao {
             ColumnName.LIBRARY_ID_LIBRARY, TableName.LIBRARY, ColumnName.LIBRARY_CITY, TableName.BOOK,
             ColumnName.BOOK_ID_BOOK);
 
+    /*
+        select *, group_concat(Distinct name order by name separator ',') as authors, group_concat(Distinct genre order
+        by genre separator ',') as genres from books left join authors_has_book on(books.id_books=authors_has_book.id_book)
+        left join authors on(authors_has_book.id_author=authors.id_authors) left join genres_has_book
+        on(books.id_books=genres_has_book.id_book) left join genres on(genres_has_book.id_genre=genres.id_genres)
+        left join libraries on(books.id_books=libraries.id_library) where genre like
+     */
     private static final String GET_BOOK_BY_GENRE_QUERY = String.format("select *, group_concat(Distinct %s order " +
                     "by %s separator ',') as %s, group_concat(Distinct %s order by %s separator ',') as %s " +
                     "from %s left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) " +
@@ -87,6 +120,14 @@ public class BookDtoDaoImpl extends DaoHelper implements BookDtoDao {
             ColumnName.GENRES_ID_GENRE, TableName.LIBRARY, TableName.BOOK, ColumnName.BOOK_ID_BOOK, TableName.LIBRARY,
             ColumnName.LIBRARY_ID_LIBRARY, ColumnName.GENRES_GENRE);
 
+    /*
+        Select *, group_concat(Distinct name order by name SEPARATOR', ') AS authors,
+        group_concat(distinct genre order by genre SEPARATOR', ') AS genres from books left join authors_has_book
+        on(books.id_books=authors_has_book.id_book) left join authors on(authors_has_book.id_author=authors.id_authors)
+        left join genres_has_book on(books.id_books=genres_has_book.id_book) left join genres
+        on(genres_has_book.id_genre=genres.id_genres) left JOIN libraries on(books.id_books=libraries.id_library)
+        where books.title LIKE
+     */
     private static final String GET_BOOK_BY_TITLE_QUERY = String.format("Select *, group_concat(Distinct %s order by %s " +
                     "SEPARATOR', ') AS %s, group_concat(distinct %s order by %s SEPARATOR', ') AS %s from %s left " +
                     "join %s on(books.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join " +
@@ -99,6 +140,13 @@ public class BookDtoDaoImpl extends DaoHelper implements BookDtoDao {
             ColumnName.GENRES_ID_GENRE, TableName.LIBRARY, TableName.BOOK, ColumnName.BOOK_ID_BOOK, TableName.LIBRARY,
             ColumnName.LIBRARY_ID_LIBRARY, TableName.BOOK, ColumnName.BOOK_TITLE);
 
+    /*
+        select *, group_concat(Distinct name order by name separator ',') as authors,
+        group_concat(Distinct genre order by genre separator ',') as genres from books left join authors_has_book
+        on(books.id_books=authors_has_book.id_book) left join authors on(authors_has_book.id_author=authors.id_authors)
+        left join genres_has_book on(books.id_books=genres_has_book.id_book) left join genres
+        on(genres_has_book.id_genre=genres.id_genres) left join libraries on(books.id_books=libraries.id_library) where name like
+     */
     private static final String GET_BOOK_BY_AUTHOR_QUERY = String.format("select *, group_concat(Distinct %s order " +
                     "by %s separator ',') as %s, group_concat(Distinct %s order by %s separator ',') as %s " +
                     "from %s left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) " +
@@ -112,6 +160,14 @@ public class BookDtoDaoImpl extends DaoHelper implements BookDtoDao {
             ColumnName.GENRES_ID_GENRE, TableName.LIBRARY, TableName.BOOK, ColumnName.BOOK_ID_BOOK, TableName.LIBRARY,
             ColumnName.LIBRARY_ID_LIBRARY, ColumnName.AUTHOR_NAME);
 
+    /*
+        Select *, group_concat(Distinct name order by name SEPARATOR', ') AS authors,
+        group_concat(distinct genre order by genre SEPARATOR', ') AS genres from books left join authors_has_book
+        on(books.id_books=authors_has_book.id_book) left join authors on(authors_has_book.id_author=authors.id_authors)
+        left join genres_has_book on(books.id_books=genres_has_book.id_book) left join genres
+        on(genres_has_book.id_genre=genres.id_genres) left JOIN libraries on(books.id_books=libraries.id_library)
+        group by books.id_books
+     */
     private static final String GET_ALL_BOOK_QUERY = String.format("Select *, group_concat(Distinct %s order by %s " +
                     "SEPARATOR', ') AS %s, group_concat(distinct %s order by %s SEPARATOR', ') AS %s from %s left " +
                     "join %s on(books.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join " +
@@ -124,6 +180,14 @@ public class BookDtoDaoImpl extends DaoHelper implements BookDtoDao {
             ColumnName.GENRES_ID_GENRE, TableName.LIBRARY, TableName.BOOK, ColumnName.BOOK_ID_BOOK, TableName.LIBRARY,
             ColumnName.LIBRARY_ID_LIBRARY, TableName.BOOK, ColumnName.BOOK_ID_BOOK);
 
+    /*
+        Select *, group_concat(Distinct name order by name SEPARATOR', ') AS authors,
+        group_concat(distinct genre order by genre SEPARATOR', ') AS genres from books left join authors_has_book
+        on(books.id_books=authors_has_book.id_book) left join authors on(authors_has_book.id_author=authors.id_authors)
+        left join genres_has_book on(books.id_books=genres_has_book.id_book) left join genres
+        on(genres_has_book.id_genre=genres.id_genres) left JOIN libraries on(books.id_books=libraries.id_library)
+        group by books.id_books LIMIT ? offset ?
+     */
     private static final String GET_BOOK_BY_PAGE_QUERY = String.format("Select *, group_concat(Distinct %s order by %s " +
                     "SEPARATOR', ') AS %s, group_concat(distinct %s order by %s SEPARATOR', ') AS %s from %s left " +
                     "join %s on(books.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join " +
@@ -136,6 +200,14 @@ public class BookDtoDaoImpl extends DaoHelper implements BookDtoDao {
             ColumnName.GENRES_ID_GENRE, TableName.LIBRARY, TableName.BOOK, ColumnName.BOOK_ID_BOOK, TableName.LIBRARY,
             ColumnName.LIBRARY_ID_LIBRARY, TableName.BOOK, ColumnName.BOOK_ID_BOOK);
 
+    /*
+        Select *, group_concat(Distinct name order by name SEPARATOR', ') AS authors,
+        group_concat(distinct genre order by genre SEPARATOR', ') AS genres from books left join authors_has_book
+        on(books.id_books=authors_has_book.id_book) left join authors on(authors_has_book.id_author=authors.id_authors)
+        left join genres_has_book on(books.id_books=genres_has_book.id_book) left join genres
+        on(genres_has_book.id_genre=genres.id_genres) left JOIN libraries on(books.id_books=libraries.id_library)
+        where books.isbn=? group by books.id_books
+     */
     private static final String GET_BOOK_BY_ISBN_QUERY = String.format("Select *, group_concat(Distinct %s order by %s " +
                     "SEPARATOR', ') AS %s, group_concat(distinct %s order by %s SEPARATOR', ') AS %s from %s left " +
                     "join %s on(books.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join " +
@@ -149,6 +221,7 @@ public class BookDtoDaoImpl extends DaoHelper implements BookDtoDao {
             ColumnName.LIBRARY_ID_LIBRARY, TableName.BOOK, ColumnName.BOOK_ISBN, TableName.BOOK,
             ColumnName.BOOK_ID_BOOK);
 
+    //DELETE FROM books where id_books=?;
     private static final String DELETE_BOOK_BY_ID_QUERY = String.format("DELETE FROM %s where %s=?;", TableName.BOOK,
             ColumnName.BOOK_ID_BOOK);
 

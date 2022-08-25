@@ -31,6 +31,10 @@ public class OrderDaoImpl extends DaoHelper implements OrderDao {
 
     private static final Logger logger = LoggerFactory.getLogger(OrderDaoImpl.class);
 
+    /*
+        INSERT INTO orders(id_book, id_user, id_admin, comment, id_library, id_status)
+        values(?, ?, ?, ?, (SELECT id_library from libraries where city=?), (SELECT id_status from order_statuses where status=?));
+     */
     private final static String ADD_ORDER_QUERY = String.format("INSERT INTO %s(%s, %s, %s, %s, %s, %s)" +
                     " values(?, ?, ?, ?, (SELECT %s from %s where %s=?), (SELECT %s from %s where %s=?));",
             TableName.ORDER, ColumnName.ORDER_ID_BOOK, ColumnName.ORDER_ID_USER, ColumnName.ORDER_ID_ADMIN,
@@ -38,6 +42,10 @@ public class OrderDaoImpl extends DaoHelper implements OrderDao {
             ColumnName.LIBRARY_ID_LIBRARY, TableName.LIBRARY, ColumnName.LIBRARY_CITY,
             ColumnName.ORDER_STATUS_ID_STATUS, TableName.ORDER_STATUS, ColumnName.ORDER_STATUS_STATUS);
 
+    /*
+        UPDATE orders set id_book=?, id_user=?, id_admin=?, comment=?, id_library=(SELECT id_library
+        from libraries where city=?), id_status=(SELECT id_status from order_statuses where status=?) WHERE id_orders=?;
+     */
     private final static String UPDATE_ORDER_QUERY = String.format("UPDATE %s set %s=?, %s=?, %s=?, %s=?, " +
                     "%s=(SELECT %s from %s where %s=?), %s=(SELECT %s from %s where %s=?) WHERE %s=?;",
             TableName.ORDER, ColumnName.ORDER_ID_BOOK, ColumnName.ORDER_ID_USER, ColumnName.ORDER_ID_ADMIN,
@@ -45,9 +53,14 @@ public class OrderDaoImpl extends DaoHelper implements OrderDao {
             ColumnName.LIBRARY_CITY, ColumnName.ORDER_ID_STATUS, ColumnName.ORDER_STATUS_ID_STATUS,
             TableName.ORDER_STATUS, ColumnName.ORDER_STATUS_STATUS, ColumnName.ORDER_ID_REQUEST);
 
+    //delete from orders where id_orders=?
     private static final String DELETE_ORDER_QUERY = String.format("delete from %s where %s=?",
             TableName.ORDER, ColumnName.ORDER_ID_REQUEST);
 
+    /*
+        SELECT * from orders left join libraries on(orders.id_library=libraries.id_library)
+        left join order_statuses on(orders.id_status=order_statuses.id_status) where orders.id_orders=? group by orders.id_orders
+     */
     private final static String GET_ORDER_BY_ID_QUERY = String.format("SELECT * from %s left join %s on(%s.%s=%s.%s) " +
                     "left join %s on(%s.%s=%s.%s) where %s.%s=? group by %s.%s", TableName.ORDER, TableName.LIBRARY,
             TableName.ORDER, ColumnName.ORDER_ID_LIBRARY, TableName.LIBRARY, ColumnName.LIBRARY_ID_LIBRARY,
@@ -55,12 +68,17 @@ public class OrderDaoImpl extends DaoHelper implements OrderDao {
             ColumnName.ORDER_STATUS_ID_STATUS, TableName.ORDER, ColumnName.ORDER_ID_REQUEST, TableName.ORDER,
             ColumnName.ORDER_ID_REQUEST);
 
+    /*
+        SELECT * from orders left join libraries on(orders.id_library=libraries.id_library)
+        left join order_statuses on(orders.id_status=order_statuses.id_status) group by orders.id_orders
+     */
     private final static String GET_ALL_ORDERS_QUERY = String.format("SELECT * from %s left join %s on(%s.%s=%s.%s) " +
                     "left join %s on(%s.%s=%s.%s) group by %s.%s", TableName.ORDER, TableName.LIBRARY,
             TableName.ORDER, ColumnName.ORDER_ID_LIBRARY, TableName.LIBRARY, ColumnName.LIBRARY_ID_LIBRARY,
             TableName.ORDER_STATUS, TableName.ORDER, ColumnName.ORDER_ID_STATUS, TableName.ORDER_STATUS,
             ColumnName.ORDER_STATUS_ID_STATUS, TableName.ORDER, ColumnName.ORDER_ID_REQUEST);
 
+    //SELECT * from orders where id_status=(Select id_status from order_statuses where status=?)
     private final static String GET_ORDER_BY_STATUS_QUERY = String.format("SELECT * from %s where %s=(Select %s " +
             "from %s where %s=?)", TableName.ORDER, ColumnName.ORDER_ID_STATUS, ColumnName.ORDER_STATUS_ID_STATUS,
             TableName.ORDER_STATUS, ColumnName.ORDER_STATUS_STATUS);

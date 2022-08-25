@@ -29,18 +29,23 @@ public class WishBookDaoImpl extends DaoHelper implements WishBookDao {
 
     private static final Logger logger = LoggerFactory.getLogger(WishBookDaoImpl.class);
 
+    //insert into wish_books(id_books, id_users) values(?, ?)
     private static final String ADD_WISH_BOOKS_QUERY = String.format("insert into %s(%s, %s) values(?, ?)",
             TableName.WISH_BOOK, ColumnName.WISH_BOOK_ID_BOOK, ColumnName.WISH_BOOK_ID_USER);
 
+    //select * from wish_books where id_books=? and id_users=?
     private static final String GET_WISH_BOOK_USER_QUERY = String.format("select * from %s where %s=? and %s=?",
             TableName.WISH_BOOK, ColumnName.WISH_BOOK_ID_BOOK, ColumnName.WISH_BOOK_ID_USER);
 
+    //select * from wish_books where id_wish_books=?
     private static final String GET_WISH_BOOK_BY_ID_QUERY = String.format("select * from %s where %s=?",
             TableName.WISH_BOOK, ColumnName.WISH_BOOK_ID);
 
+    //delete from wish_books where id_wish_books=?
     private static final String DELETE_WISH_BOOKS_QUERY = String.format("delete from %s where %s=?",
             TableName.WISH_BOOK, ColumnName.WISH_BOOK_ID);
 
+    //select count(id_wish_books) from wish_books
     private final static String GET_COUNT_QUERY = String.format("select count(%s) from %s", ColumnName.WISH_BOOK_ID,
             TableName.WISH_BOOK);
 

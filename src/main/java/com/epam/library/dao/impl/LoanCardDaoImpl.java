@@ -30,6 +30,10 @@ public class LoanCardDaoImpl extends DaoHelper implements LoanCardDao {
 
     private static final Logger logger = LoggerFactory.getLogger(LoanCardDaoImpl.class);
 
+    /*
+        INSERT INTO loan_cards(id_users, taking_book, deadline, type_use, id_book, id_status, id_library)
+        values(?, ?, ?, ?, ?, (SELECT id_status FROM card_statuses WHERE status=?), (SELECT id_library FROM libraries WHERE city=?));
+     */
     private final static String ADD_LOAN_CARD_QUERY = String.format("INSERT INTO %s(%s, %s, %s, %s, %s, %s, %s)" +
                     " values(?, ?, ?, ?, ?, (SELECT %s FROM %s WHERE %s=?), (SELECT %s FROM %s WHERE %s=?));",
             TableName.LOAN_CARDS, ColumnName.LOAN_CARD_ID_USER, ColumnName.LOAN_CARD_TAKING_BOOK, ColumnName.LOAN_DEADLINE,
@@ -37,6 +41,11 @@ public class LoanCardDaoImpl extends DaoHelper implements LoanCardDao {
             ColumnName.LOAN_CARD_ID_LIBRARY, ColumnName.CARD_STATUS_ID_STATUS, TableName.LOAN_CARDS_STATUS,
             ColumnName.CARD_STATUS_STATUS, ColumnName.LIBRARY_ID_LIBRARY, TableName.LIBRARY, ColumnName.LIBRARY_CITY);
 
+    /*
+        Update loan_cards SET  id_users=?, id_status=(SELECT id_status from card_statuses where status=?),
+        taking_book=?, deadline=?, type_use=?, id_book=?, id_library=(SELECT id_library from libraries where city=?),
+        return_book=? where id_loan_cards=?
+     */
     private final static String UPDATE_LOAN_CARD_QUERY = String.format("Update %s SET  %s=?, %s=(SELECT %s from %s " +
                     "where %s=?), %s=?, %s=?, %s=?, %s=?, %s=(SELECT %s from %s where %s=?), %s=? where %s=?",
             TableName.LOAN_CARDS, ColumnName.LOAN_CARD_ID_USER, ColumnName.LOAN_CARD_ID_STATUS,
@@ -45,11 +54,16 @@ public class LoanCardDaoImpl extends DaoHelper implements LoanCardDao {
             ColumnName.LOAN_CARD_ID_BOOK, ColumnName.LOAN_CARD_ID_LIBRARY, ColumnName.LIBRARY_ID_LIBRARY,
             TableName.LIBRARY, ColumnName.LIBRARY_CITY, ColumnName.LOAN_CARD_RETURN_BOOK, ColumnName.LOAN_CARD_ID_CARD);
 
+    //select count(id_users) from loan_cards where loan_cards.id_status=(SELECT id_status from card_statuses where status=?)
     private final static String GET_COUNT_BY_STATUS_QUERY = String.format("select count(%s) from %s where %s.%s=" +
                     "(SELECT %s from %s where %s=?)", ColumnName.LOAN_CARD_ID_USER, TableName.LOAN_CARDS,
             TableName.LOAN_CARDS, ColumnName.LOAN_CARD_ID_STATUS, ColumnName.LOAN_CARD_ID_STATUS,
             TableName.LOAN_CARDS_STATUS, ColumnName.CARD_STATUS_STATUS);
 
+    /*
+        SELECT * from loan_cards left join card_statuses on(loan_cards.id_status=card_statuses.id_status)
+        left join libraries on(loan_cards.id_library=libraries.id_library) where loan_cards.id_loan_cards=?
+     */
     private final static String GET_CARDS_BY_ID_CARD_QUERY = String.format("SELECT * from %s left join %s " +
                     "on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) where %s.%s=?", TableName.LOAN_CARDS,
             TableName.LOAN_CARDS_STATUS, TableName.LOAN_CARDS, ColumnName.LOAN_CARD_ID_STATUS,

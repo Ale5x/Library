@@ -31,27 +31,35 @@ public class GenreDaoImpl extends DaoHelper implements GenreDao {
 
     private static final Logger logger = LoggerFactory.getLogger(GenreDaoImpl.class);
 
+    //INSERT IGNORE INTO genres(genre) VALUES(?)
     private static final String ADD_GENRE_QUERY = String.format("INSERT IGNORE INTO %s(%s) VALUES(?)",
             TableName.GENRES, ColumnName.GENRES_GENRE);
 
+    //UPDATE genres SET genre=? WHERE id_genres=?;
     private final static String UPDATE_GENRE_BY_ID_QUERY = String.format("UPDATE %s SET %s=? WHERE %s=?;",
             TableName.GENRES, ColumnName.GENRES_GENRE, ColumnName.GENRES_ID_GENRE);
 
+    //SELECT * FROM genres order by id_genres;
     private final static String GET_ALL_GENRES_QUERY = String.format("SELECT * FROM %s order by %s;", TableName.GENRES,
             ColumnName.GENRES_ID_GENRE);
 
+    //SELECT * FROM genres WHERE id_genres=?;
     private final static String GET_GENRE_BY_ID_QUERY = String.format("SELECT * FROM %s WHERE %s=?;",
             TableName.GENRES, ColumnName.GENRES_ID_GENRE);
 
+    //SELECT * FROM genres WHERE genre=?;
     private final static String GET_GENRE_BY_CATEGORY_QUERY = String.format("SELECT * FROM %s WHERE %s=?;",
             TableName.GENRES, ColumnName.GENRES_GENRE);
 
+    //select count(genre) from genres
     private final static String GET_COUNT_QUERY = String.format("select count(%s) from %s", ColumnName.GENRES_GENRE,
             TableName.GENRES);
 
+    //select count(id_book) from genres_has_book where id_genre=?
     private final static String GET_COUNT_BOOKS_BY_GENRE_QUERY = String.format("select count(%s) from %s where %s=?",
             ColumnName.GHB_ID_BOOK, TableName.G_H_B, ColumnName.GHB_ID_GENRES);
 
+    //delete from genres_has_book where id_book=?
     private static final String DELETE_GENRES_QUERY = String.format("delete from %s where %s=?",
             TableName.G_H_B, ColumnName.GHB_ID_BOOK);
 

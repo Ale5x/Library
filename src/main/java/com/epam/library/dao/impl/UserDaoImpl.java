@@ -28,14 +28,21 @@ public class UserDaoImpl extends DaoHelper implements UserDao {
 
     private final static Logger logger = LoggerFactory.getLogger(UserDaoImpl.class);
 
+    /*
+        INSERT INTO users(password, first_name, last_name, count_violations, email, id_role, id_status)
+        VALUES(?, ?, ?, ?, ?, (SELECT id_role FROM role WHERE role=?), (SELECT id_status FROM user_statuses WHERE status=?));
+     */
     private final static String ADD_USER_QUERY = String.format("INSERT INTO %s(%s, %s, %s, %s, %s, %s, %s) " +
                     "VALUES(?, ?, ?, ?, ?, (SELECT %s FROM %s WHERE %s=?), (SELECT %s FROM %s " +
-                    "WHERE %s=?));", TableName.USER,
-            ColumnName.USER_PASSWORD, ColumnName.USER_FIRST_NAME, ColumnName.USER_LAST_NAME,
-            ColumnName.USER_COUNT_VIOLATIONS, ColumnName.USER_EMAIL,
-            ColumnName.USER_ID_ROLE, ColumnName.USER_ID_STATUS, ColumnName.ROLE_ID_ROLE,
-            TableName.ROLE, ColumnName.ROLE_ROLE,  ColumnName.USER_STATUS_ID_STATUS, TableName.USER_STATUS, ColumnName.USER_STATUS_STATUS);
+                    "WHERE %s=?));", TableName.USER, ColumnName.USER_PASSWORD, ColumnName.USER_FIRST_NAME,
+            ColumnName.USER_LAST_NAME, ColumnName.USER_COUNT_VIOLATIONS, ColumnName.USER_EMAIL, ColumnName.USER_ID_ROLE,
+            ColumnName.USER_ID_STATUS, ColumnName.ROLE_ID_ROLE, TableName.ROLE, ColumnName.ROLE_ROLE,
+            ColumnName.USER_STATUS_ID_STATUS, TableName.USER_STATUS, ColumnName.USER_STATUS_STATUS);
 
+    /*
+        UPDATE users set id_role=(SELECT id_role FROM role WHERE role=?),
+         id_status=(SELECT id_status FROM user_statuses WHERE status=?), first_name=?, last_name=?, email=?, count_violations=? WHERE id_users=?;
+     */
     private final static String UPDATE_USER_QUERY = String.format("UPDATE %s set %s=(SELECT %s FROM %s WHERE %s=?), " +
                     " %s=(SELECT %s FROM %s WHERE %s=?), %s=?, %s=?, %s=?, " +
                     "%s=? WHERE %s=?;", TableName.USER, ColumnName.USER_ID_ROLE, ColumnName.ROLE_ID_ROLE,
@@ -44,39 +51,50 @@ public class UserDaoImpl extends DaoHelper implements UserDao {
             ColumnName.USER_EMAIL, ColumnName.USER_COUNT_VIOLATIONS,
             ColumnName.USER_ID_USERS);
 
+    //UPDATE users SET password=? WHERE id_users=?;
     private final static String UPDATE_PASSWORD_QUERY = String.format("UPDATE %s SET %s=? WHERE %s=?;",
             TableName.USER, ColumnName.USER_PASSWORD, ColumnName.USER_ID_USERS);
 
+    //SELECT * FROM users NATURAL JOIN role NATURAL JOIN user_statuses WHERE id_users=?;
     private final static String GET_USER_BY_ID_QUERY = String.format("SELECT * FROM %s NATURAL JOIN %s " +
             "NATURAL JOIN %s WHERE %s=?;", TableName.USER, TableName.ROLE, TableName.USER_STATUS,
             ColumnName.USER_ID_USERS);
 
+    //SELECT * FROM users NATURAL JOIN role NATURAL JOIN user_statuses WHERE email=?
     private final static String GET_USER_BY_EMAIL_QUERY = String.format("SELECT * FROM %s NATURAL JOIN %s NATURAL" +
             " JOIN %s WHERE %s=?", TableName.USER, TableName.ROLE, TableName.USER_STATUS,
             ColumnName.USER_EMAIL);
 
+    /*
+        SELECT * FROM users NATURAL JOIN role NATURAL JOIN user_statuses WHERE email=? and password=?
+        and (user_statuses.status=? or user_statuses.status=?);
+     */
     private final static String GET_USER_BY_EMAIL_PASSWORD_STATUS_QUERY = String.format("SELECT * FROM %s" +
-            " NATURAL JOIN %s NATURAL JOIN %s WHERE %s=? and %s=? and (%s.%s=? or %s.%s=?);",
-            TableName.USER, TableName.ROLE, TableName.USER_STATUS, ColumnName.USER_EMAIL,
-            ColumnName.USER_PASSWORD, TableName.USER_STATUS, ColumnName.USER_STATUS_STATUS, TableName.USER_STATUS,
-            ColumnName.USER_STATUS_STATUS);
+            " NATURAL JOIN %s NATURAL JOIN %s WHERE %s=? and %s=? and (%s.%s=? or %s.%s=?);", TableName.USER,
+            TableName.ROLE, TableName.USER_STATUS, ColumnName.USER_EMAIL, ColumnName.USER_PASSWORD, TableName.USER_STATUS,
+            ColumnName.USER_STATUS_STATUS, TableName.USER_STATUS, ColumnName.USER_STATUS_STATUS);
 
+    //SELECT * FROM users NATURAL JOIN user_statuses NATURAL JOIN role
     private final static String GET_ALL_USERS_QUERY = String.format("SELECT * FROM %s NATURAL JOIN %s NATURAL JOIN %s ",
             TableName.USER, TableName.USER_STATUS, TableName.ROLE);
 
+    //SELECT * FROM users NATURAL JOIN user_statuses NATURAL JOIN role  WHERE user_statuses.status=?;
     private final static String GET_ALL_USERS_BY_STATUS_QUERY = String.format("SELECT * FROM %s NATURAL JOIN %s " +
             "NATURAL JOIN %s  WHERE %s.%s=?;", TableName.USER, TableName.USER_STATUS, TableName.ROLE,
              TableName.USER_STATUS, ColumnName.USER_STATUS_STATUS);
 
+    //SELECT * FROM users NATURAL JOIN user_statuses NATURAL JOIN role  WHERE role.role=?;
     private final static String GET_ALL_USERS_BY_ROLE_QUERY = String.format("SELECT * FROM %s NATURAL JOIN %s " +
                     "NATURAL JOIN %s  WHERE %s.%s=?;", TableName.USER, TableName.USER_STATUS, TableName.ROLE,
             TableName.ROLE, ColumnName.ROLE_ROLE);
 
+    //select count(email) from users where users.id_status=(SELECT id_status from user_statuses where status=?)
     private final static String GET_COUNT_BY_STATUS_QUERY = String.format("select count(%s) from %s where %s.%s=" +
                     "(SELECT %s from %s where %s=?)", ColumnName.USER_EMAIL, TableName.USER, TableName.USER,
             ColumnName.USER_STATUS_ID_STATUS, ColumnName.USER_STATUS_ID_STATUS, TableName.USER_STATUS,
             ColumnName.USER_STATUS_STATUS);
 
+    //SELECT * FROM users NATURAL JOIN role NATURAL JOIN user_statuses WHERE registration BETWEEN ? AND ?;
     private final static String GET_COUNT_USER_BY_PERIOD_QUERY = String.format("SELECT * FROM %s NATURAL JOIN %s " +
                     "NATURAL JOIN %s WHERE %s BETWEEN ? AND ?;", TableName.USER, TableName.ROLE, TableName.USER_STATUS,
             ColumnName.USER_REGISTRATION);

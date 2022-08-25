@@ -29,31 +29,40 @@ public class LibraryDaoImpl extends DaoHelper implements LibraryDao {
 
     private static final Logger logger = LoggerFactory.getLogger(LibraryDaoImpl.class);
 
+    //INSERT INTO libraries(city, street, id_status) values(?, ?, (Select id_status from library_statuses where status=?));
     private final static String ADD_LIBRARY_QUERY = String.format("INSERT INTO %s(%s, %s, %s) values(?, ?, " +
                     "(Select %s from %s where %s=?));", TableName.LIBRARY, ColumnName.LIBRARY_CITY,
             ColumnName.LIBRARY_STREET, ColumnName.LIBRARY_ID_STATUS, ColumnName.LIBRARY_STATUS_ID_STATUS,
             TableName.LIBRARY_STATUS, ColumnName.LIBRARY_STATUS_STATUS);
 
+    //UPDATE libraries SET city=?, street=?, id_status=(Select id_status from library_statuses WHERE status=?) WHERE id_library=?;
     private final static String UPDATE_QUERY = String.format("UPDATE %s SET %s=?, %s=?, %s=(Select %s from %s " +
                     "WHERE %s=?) WHERE %s=?;", TableName.LIBRARY, ColumnName.LIBRARY_CITY, ColumnName.LIBRARY_STREET,
             ColumnName.LIBRARY_ID_STATUS, ColumnName.LIBRARY_STATUS_ID_STATUS, TableName.LIBRARY_STATUS,
             ColumnName.LIBRARY_STATUS_STATUS, ColumnName.LIBRARY_ID_LIBRARY);
 
+    //SELECT * FROM libraries LEFT JOIN library_statuses on(libraries.id_status=library_statuses.id_status) WHERE id_library=?;
     private final static String GET_LIBRARY_BY_ID_QUERY = String.format("SELECT * FROM %s LEFT JOIN %s on(%s.%s=%s.%s) " +
                     "WHERE %s=?;", TableName.LIBRARY, TableName.LIBRARY_STATUS, TableName.LIBRARY,
             ColumnName.LIBRARY_ID_STATUS, TableName.LIBRARY_STATUS, ColumnName.LIBRARY_STATUS_ID_STATUS,
             ColumnName.LIBRARY_ID_LIBRARY);
 
+    //SELECT * FROM libraries LEFT JOIN library_statuses on(libraries.id_status=library_statuses.id_status) WHERE city=?;
     private final static String GET_LIBRARY_BY_NAME_QUERY = String.format("SELECT * FROM %s LEFT JOIN %s on(%s.%s=%s.%s) " +
                     "WHERE %s=?;", TableName.LIBRARY, TableName.LIBRARY_STATUS, TableName.LIBRARY,
             ColumnName.LIBRARY_ID_STATUS, TableName.LIBRARY_STATUS, ColumnName.LIBRARY_STATUS_ID_STATUS,
             ColumnName.LIBRARY_CITY);
 
+    /*
+        SELECT * FROM libraries LEFT JOIN library_statuses on(libraries.id_status=library_statuses.id_status)
+        WHERE library_statuses.status=?;
+     */
     private final static String GET_LIBRARY_BY_STATUS_QUERY = String.format("SELECT * FROM %s LEFT JOIN %s on(%s.%s=%s.%s) " +
                     "WHERE %s.%s=?;", TableName.LIBRARY, TableName.LIBRARY_STATUS, TableName.LIBRARY,
             ColumnName.LIBRARY_ID_STATUS, TableName.LIBRARY_STATUS, ColumnName.LIBRARY_STATUS_ID_STATUS,
             TableName.LIBRARY_STATUS, ColumnName.LIBRARY_STATUS_STATUS);
 
+    //SELECT * FROM libraries LEFT JOIN library_statuses on(libraries.id_status=library_statuses.id_status)
     private final static String GET_ALL_CITY_QUERY = String.format("SELECT * FROM %s LEFT JOIN %s on(%s.%s=%s.%s)",
             TableName.LIBRARY, TableName.LIBRARY_STATUS, TableName.LIBRARY, ColumnName.LIBRARY_ID_STATUS,
             TableName.LIBRARY_STATUS, ColumnName.LIBRARY_STATUS_ID_STATUS);

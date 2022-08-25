@@ -28,58 +28,90 @@ public class OrderDtoDaoImpl extends DaoHelper implements OrderDtoDao {
 
     private static final Logger logger = LoggerFactory.getLogger(OrderDtoDaoImpl.class);
 
+    /*
+        SELECT * from orders left join users on(orders.id_user=users.id_users) left join libraries
+        on(orders.id_library=libraries.id_library) left join books on(books.id_books=orders.id_book)
+        left join order_statuses on(orders.id_status=order_statuses.id_status) where orders.id_orders=?
+     */
     private final static String GET_ORDER_BY_ID_QUERY = String.format("SELECT * from %s left join %s " +
-                    "on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) where %s.%s=?",
-            TableName.ORDER, TableName.USER, TableName.ORDER, ColumnName.ORDER_ID_USER, TableName.USER,
+                    "on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) " +
+                    "where %s.%s=?", TableName.ORDER, TableName.USER, TableName.ORDER, ColumnName.ORDER_ID_USER, TableName.USER,
             ColumnName.USER_ID_USERS, TableName.LIBRARY, TableName.ORDER, ColumnName.ORDER_ID_LIBRARY,
             TableName.LIBRARY, ColumnName.LIBRARY_ID_LIBRARY, TableName.BOOK, TableName.BOOK, ColumnName.BOOK_ID_BOOK,
             TableName.ORDER, ColumnName.ORDER_ID_BOOK, TableName.ORDER_STATUS, TableName.ORDER,
             ColumnName.ORDER_STATUS_ID_STATUS, TableName.ORDER_STATUS, ColumnName.ORDER_STATUS_ID_STATUS, TableName.ORDER,
             ColumnName.ORDER_ID_REQUEST);
 
+    /*
+        SELECT * from orders left join users on(orders.id_user=users.id_users) left join libraries
+        on(orders.id_library=libraries.id_library) left join books on(books.id_books=orders.id_book)
+        left join order_statuses on(orders.id_status=order_statuses.id_status) where orders.id_user=? group by orders.id_orders
+     */
     private final static String GET_ORDER_BY_USER_QUERY = String.format("SELECT * from %s left join %s " +
-                    "on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) where %s.%s=? group by %s.%s",
-            TableName.ORDER, TableName.USER, TableName.ORDER, ColumnName.ORDER_ID_USER, TableName.USER,
-            ColumnName.USER_ID_USERS, TableName.LIBRARY, TableName.ORDER, ColumnName.ORDER_ID_LIBRARY,
-            TableName.LIBRARY, ColumnName.LIBRARY_ID_LIBRARY, TableName.BOOK, TableName.BOOK, ColumnName.BOOK_ID_BOOK,
-            TableName.ORDER, ColumnName.ORDER_ID_BOOK, TableName.ORDER_STATUS, TableName.ORDER,
+                    "on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) " +
+                    "where %s.%s=? group by %s.%s", TableName.ORDER, TableName.USER, TableName.ORDER,
+            ColumnName.ORDER_ID_USER, TableName.USER, ColumnName.USER_ID_USERS, TableName.LIBRARY, TableName.ORDER,
+            ColumnName.ORDER_ID_LIBRARY, TableName.LIBRARY, ColumnName.LIBRARY_ID_LIBRARY, TableName.BOOK, TableName.BOOK,
+            ColumnName.BOOK_ID_BOOK, TableName.ORDER, ColumnName.ORDER_ID_BOOK, TableName.ORDER_STATUS, TableName.ORDER,
             ColumnName.ORDER_STATUS_ID_STATUS, TableName.ORDER_STATUS, ColumnName.ORDER_STATUS_ID_STATUS, TableName.ORDER,
             ColumnName.ORDER_ID_USER, TableName.ORDER, ColumnName.ORDER_ID_REQUEST);
 
+    /*
+        SELECT * from orders left join users on(orders.id_user=users.id_users) left join libraries
+        on(orders.id_library=libraries.id_library) left join books on(books.id_books=orders.id_book)
+        left join order_statuses on(orders.id_status=order_statuses.id_status) where order_statuses.status=? group by orders.id_orders
+     */
     private final static String GET_ORDER_BY_STATUS_QUERY = String.format("SELECT * from %s left join %s " +
-                    "on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) where %s.%s=? group by %s.%s",
-            TableName.ORDER, TableName.USER, TableName.ORDER, ColumnName.ORDER_ID_USER, TableName.USER,
-            ColumnName.USER_ID_USERS, TableName.LIBRARY, TableName.ORDER, ColumnName.ORDER_ID_LIBRARY,
+                    "on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) " +
+                    "where %s.%s=? group by %s.%s", TableName.ORDER, TableName.USER, TableName.ORDER, ColumnName.ORDER_ID_USER,
+            TableName.USER, ColumnName.USER_ID_USERS, TableName.LIBRARY, TableName.ORDER, ColumnName.ORDER_ID_LIBRARY,
             TableName.LIBRARY, ColumnName.LIBRARY_ID_LIBRARY, TableName.BOOK, TableName.BOOK, ColumnName.BOOK_ID_BOOK,
             TableName.ORDER, ColumnName.ORDER_ID_BOOK, TableName.ORDER_STATUS, TableName.ORDER,
             ColumnName.ORDER_STATUS_ID_STATUS, TableName.ORDER_STATUS, ColumnName.ORDER_STATUS_ID_STATUS, TableName.ORDER_STATUS,
             ColumnName.ORDER_STATUS_STATUS, TableName.ORDER, ColumnName.ORDER_ID_REQUEST);
 
+    /*
+        SELECT * from orders left join users on(orders.id_user=users.id_users) left join libraries
+        on(orders.id_library=libraries.id_library) left join books on(books.id_books=orders.id_book)
+        left join order_statuses on(orders.id_status=order_statuses.id_status) where libraries.city=? group by orders.id_orders
+     */
     private final static String GET_ORDER_BY_CITY_QUERY = String.format("SELECT * from %s left join %s " +
-                    "on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) where %s.%s=? group by %s.%s",
-            TableName.ORDER, TableName.USER, TableName.ORDER, ColumnName.ORDER_ID_USER, TableName.USER,
-            ColumnName.USER_ID_USERS, TableName.LIBRARY, TableName.ORDER, ColumnName.ORDER_ID_LIBRARY,
+                    "on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) " +
+                    "where %s.%s=? group by %s.%s", TableName.ORDER, TableName.USER, TableName.ORDER, ColumnName.ORDER_ID_USER,
+            TableName.USER, ColumnName.USER_ID_USERS, TableName.LIBRARY, TableName.ORDER, ColumnName.ORDER_ID_LIBRARY,
             TableName.LIBRARY, ColumnName.LIBRARY_ID_LIBRARY, TableName.BOOK, TableName.BOOK, ColumnName.BOOK_ID_BOOK,
             TableName.ORDER, ColumnName.ORDER_ID_BOOK, TableName.ORDER_STATUS, TableName.ORDER,
             ColumnName.ORDER_STATUS_ID_STATUS, TableName.ORDER_STATUS, ColumnName.ORDER_STATUS_ID_STATUS, TableName.LIBRARY,
             ColumnName.LIBRARY_CITY, TableName.ORDER, ColumnName.ORDER_ID_REQUEST);
 
+    /*
+        SELECT * from orders left join users on(orders.id_user=users.id_users) left join libraries
+        on(orders.id_library=libraries.id_library) left join books on(books.id_books=orders.id_book)
+        left join order_statuses on(orders.id_status=order_statuses.id_status) where libraries.city=?
+        and order_statuses.status=? group by orders.id_orders
+     */
     private final static String GET_ORDER_BY_CITY_AND_STATUS_QUERY = String.format("SELECT * from %s left join %s " +
-                    "on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) where %s.%s=? and %s.%s=? group by %s.%s",
-            TableName.ORDER, TableName.USER, TableName.ORDER, ColumnName.ORDER_ID_USER, TableName.USER,
-            ColumnName.USER_ID_USERS, TableName.LIBRARY, TableName.ORDER, ColumnName.ORDER_ID_LIBRARY,
-            TableName.LIBRARY, ColumnName.LIBRARY_ID_LIBRARY, TableName.BOOK, TableName.BOOK, ColumnName.BOOK_ID_BOOK,
-            TableName.ORDER, ColumnName.ORDER_ID_BOOK, TableName.ORDER_STATUS, TableName.ORDER,
+                    "on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) " +
+                    "where %s.%s=? and %s.%s=? group by %s.%s", TableName.ORDER, TableName.USER, TableName.ORDER,
+            ColumnName.ORDER_ID_USER, TableName.USER, ColumnName.USER_ID_USERS, TableName.LIBRARY, TableName.ORDER,
+            ColumnName.ORDER_ID_LIBRARY, TableName.LIBRARY, ColumnName.LIBRARY_ID_LIBRARY, TableName.BOOK, TableName.BOOK,
+            ColumnName.BOOK_ID_BOOK, TableName.ORDER, ColumnName.ORDER_ID_BOOK, TableName.ORDER_STATUS, TableName.ORDER,
             ColumnName.ORDER_STATUS_ID_STATUS, TableName.ORDER_STATUS, ColumnName.ORDER_STATUS_ID_STATUS, TableName.LIBRARY,
             ColumnName.LIBRARY_CITY, TableName.ORDER_STATUS, ColumnName.ORDER_STATUS_STATUS, TableName.ORDER, ColumnName.ORDER_ID_REQUEST);
 
+    /*
+        SELECT * from orders left join users on(orders.id_user=users.id_users) left join libraries
+        on(orders.id_library=libraries.id_library) left join books on(books.id_books=orders.id_book)
+        left join order_statuses on(orders.id_status=order_statuses.id_status) group by orders.id_orders
+     */
     private final static String GET_ALL_ORDERS_QUERY = String.format("SELECT * from %s left join %s " +
                     "on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) group by %s.%s",
             TableName.ORDER, TableName.USER, TableName.ORDER, ColumnName.ORDER_ID_USER, TableName.USER,
             ColumnName.USER_ID_USERS, TableName.LIBRARY, TableName.ORDER, ColumnName.ORDER_ID_LIBRARY,
             TableName.LIBRARY, ColumnName.LIBRARY_ID_LIBRARY, TableName.BOOK, TableName.BOOK, ColumnName.BOOK_ID_BOOK,
             TableName.ORDER, ColumnName.ORDER_ID_BOOK, TableName.ORDER_STATUS, TableName.ORDER,
-            ColumnName.ORDER_STATUS_ID_STATUS, TableName.ORDER_STATUS, ColumnName.ORDER_STATUS_ID_STATUS, TableName.ORDER, ColumnName.ORDER_ID_REQUEST);
+            ColumnName.ORDER_STATUS_ID_STATUS, TableName.ORDER_STATUS, ColumnName.ORDER_STATUS_ID_STATUS, TableName.ORDER,
+            ColumnName.ORDER_ID_REQUEST);
 
 
     @Override

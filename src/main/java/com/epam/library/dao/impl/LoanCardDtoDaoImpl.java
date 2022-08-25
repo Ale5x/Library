@@ -27,6 +27,11 @@ public class LoanCardDtoDaoImpl extends DaoHelper implements LoanCardDtoDao {
 
     private static final Logger logger = LoggerFactory.getLogger(LoanCardDtoDaoImpl.class);
 
+    /*
+        SELECT * from loan_cards left join users on(loan_cards.id_users=users.id_users) left join libraries
+        on(loan_cards.id_library=libraries.id_library) left join books on(loan_cards.id_book=books.id_books)
+        left join card_statuses on(loan_cards.id_status=card_statuses.id_status) group by loan_cards.id_loan_cards
+     */
     private final static String GET_ALL_CARDS_QUERY = String.format("SELECT * from %s left join %s on(%s.%s=%s.%s) " +
                     "left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) " +
                     "group by %s.%s", TableName.LOAN_CARDS, TableName.USER, TableName.LOAN_CARDS,
@@ -37,6 +42,11 @@ public class LoanCardDtoDaoImpl extends DaoHelper implements LoanCardDtoDao {
             TableName.LOAN_CARDS_STATUS, ColumnName.CARD_STATUS_ID_STATUS, TableName.LOAN_CARDS,
             ColumnName.LOAN_CARD_ID_CARD);
 
+    /*
+        SELECT * from loan_cards left join users on(loan_cards.id_users=users.id_users) left join libraries
+        on(loan_cards.id_library=libraries.id_library) left join books on(loan_cards.id_book=books.id_books)
+        left join card_statuses on(loan_cards.id_status=card_statuses.id_status) where books.id_books=? group by loan_cards.id_loan_cards
+     */
     private final static String GET_CARDS_BY_ID_BOOK_QUERY = String.format("SELECT * from %s left join %s " +
                     "on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s " +
                     "on(%s.%s=%s.%s) where %s.%s=? group by %s.%s", TableName.LOAN_CARDS, TableName.USER,
@@ -47,7 +57,11 @@ public class LoanCardDtoDaoImpl extends DaoHelper implements LoanCardDtoDao {
             ColumnName.LOAN_CARD_ID_STATUS, TableName.LOAN_CARDS_STATUS, ColumnName.CARD_STATUS_ID_STATUS,
             TableName.BOOK, ColumnName.BOOK_ID_BOOK, TableName.LOAN_CARDS, ColumnName.LOAN_CARD_ID_CARD);
 
-
+    /*
+        SELECT * from loan_cards left join users on(loan_cards.id_users=users.id_users) left join libraries
+        on(loan_cards.id_library=libraries.id_library) left join books on(loan_cards.id_book=books.id_books)
+        left join card_statuses on(loan_cards.id_status=card_statuses.id_status) where libraries.city=? group by loan_cards.id_loan_cards
+     */
     private final static String GET_CARDS_BY_CITY_QUERY = String.format("SELECT * from %s left join %s " +
                     "on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s " +
                     "on(%s.%s=%s.%s) where %s.%s=? group by %s.%s", TableName.LOAN_CARDS, TableName.USER,
@@ -58,6 +72,12 @@ public class LoanCardDtoDaoImpl extends DaoHelper implements LoanCardDtoDao {
             ColumnName.LOAN_CARD_ID_STATUS, TableName.LOAN_CARDS_STATUS, ColumnName.CARD_STATUS_ID_STATUS,
             TableName.LIBRARY, ColumnName.LIBRARY_CITY, TableName.LOAN_CARDS, ColumnName.LOAN_CARD_ID_CARD);
 
+    /*
+        SELECT * from loan_cards left join users on(loan_cards.id_users=users.id_users) left join libraries
+        on(loan_cards.id_library=libraries.id_library) left join books on(loan_cards.id_book=books.id_books)
+        left join card_statuses on(loan_cards.id_status=card_statuses.id_status) where libraries.city=?
+        and card_statuses.status=? group by loan_cards.id_loan_cards
+     */
     private final static String GET_CARDS_BY_CITY_AND_STATUS_QUERY = String.format("SELECT * from %s left join %s " +
                     "on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s " +
                     "on(%s.%s=%s.%s) where %s.%s=? and %s.%s=? group by %s.%s", TableName.LOAN_CARDS, TableName.USER,
@@ -69,6 +89,11 @@ public class LoanCardDtoDaoImpl extends DaoHelper implements LoanCardDtoDao {
             TableName.LIBRARY, ColumnName.LIBRARY_CITY, TableName.LOAN_CARDS_STATUS, ColumnName.CARD_STATUS_STATUS,
             TableName.LOAN_CARDS, ColumnName.LOAN_CARD_ID_CARD);
 
+    /*
+        SELECT * from loan_cards left join users on(loan_cards.id_users=users.id_users) left join libraries
+        on(loan_cards.id_library=libraries.id_library) left join books on(loan_cards.id_book=books.id_books)
+        left join card_statuses on(loan_cards.id_status=card_statuses.id_status) where users.id_users=? group by loan_cards.id_loan_cards
+     */
     private final static String GET_CARDS_BY_ID_USER_QUERY = String.format("SELECT * from %s left join %s " +
                     "on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s " +
                     "on(%s.%s=%s.%s) where %s.%s=? group by %s.%s", TableName.LOAN_CARDS, TableName.USER,
@@ -79,6 +104,11 @@ public class LoanCardDtoDaoImpl extends DaoHelper implements LoanCardDtoDao {
             ColumnName.LOAN_CARD_ID_STATUS, TableName.LOAN_CARDS_STATUS, ColumnName.CARD_STATUS_ID_STATUS,
             TableName.USER, ColumnName.USER_ID_USERS, TableName.LOAN_CARDS, ColumnName.LOAN_CARD_ID_CARD);
 
+    /*
+        SELECT * from loan_cards left join users on(loan_cards.id_users=users.id_users) left join libraries
+        on(loan_cards.id_library=libraries.id_library) left join books on(loan_cards.id_book=books.id_books)
+        left join card_statuses on(loan_cards.id_status=card_statuses.id_status) where card_statuses.status=? group by loan_cards.id_loan_cards
+     */
     private final static String GET_CARDS_BY_STATUS_CARD_QUERY = String.format("SELECT * from %s left join %s " +
                     "on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s " +
                     "on(%s.%s=%s.%s) where %s.%s=? group by %s.%s", TableName.LOAN_CARDS, TableName.USER,
@@ -89,6 +119,11 @@ public class LoanCardDtoDaoImpl extends DaoHelper implements LoanCardDtoDao {
             ColumnName.LOAN_CARD_ID_STATUS, TableName.LOAN_CARDS_STATUS, ColumnName.CARD_STATUS_ID_STATUS,
             TableName.LOAN_CARDS_STATUS, ColumnName.CARD_STATUS_STATUS, TableName.LOAN_CARDS, ColumnName.LOAN_CARD_ID_CARD);
 
+    /*
+        SELECT * from loan_cards left join users on(loan_cards.id_users=users.id_users) left join libraries
+        on(loan_cards.id_library=libraries.id_library) left join books on(loan_cards.id_book=books.id_books)
+        left join card_statuses on(loan_cards.id_status=card_statuses.id_status) where loan_cards.id_loan_cards=? group by loan_cards.id_loan_cards
+     */
     private final static String GET_CARDS_BY_ID_CARD_QUERY = String.format("SELECT * from %s left join %s " +
                     "on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s on(%s.%s=%s.%s) left join %s " +
                     "on(%s.%s=%s.%s) where %s.%s=? group by %s.%s", TableName.LOAN_CARDS, TableName.USER,
